@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:complexType name="CrossrefSearchResult">
+		<xsd:sequence>
+			<xsd:element name="status" type="xsd:string" />
+			<xsd:element ref="message" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="message">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="total-results" type="xsd:unsignedInt" />
+				<xsd:element name="items" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="publisher" type="xsd:string"	minOccurs="1" />
+							<xsd:element name="created">
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="date-time" type="xsd:dateTime" minOccurs="1" />
+									</xsd:sequence>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="title" type="xsd:string"	minOccurs="1" />
+							<xsd:element name="author" minOccurs="1" maxOccurs="unbounded">
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="given" type="xsd:string" />
+										<xsd:element name="family" type="xsd:string" />
+									</xsd:sequence>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="subtitle" type="xsd:string" minOccurs="0" />
+							<xsd:element name="ISBN" type="ISBNCode" maxOccurs="unbounded" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<!-- ISBN code is a 10 or 13 digit code. If it is 10 digits long the last 
+		digit may be a X -->
+	<xsd:simpleType name="ISBNCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{13}" />
+			<xsd:pattern value="[0-9]{9}([0-9]|X)" />
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

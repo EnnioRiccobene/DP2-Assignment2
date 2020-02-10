@@ -1,0 +1,28 @@
+Distributed Programming II A.Y. 2019-20
+=======================================
+
+Assignment n. 2 (Lab4)
+------------------------
+
+This archive includes:
+
+- README            		This file
+- Assignment2.pdf   		The text of Assignment 2 (Lab4)
+- neo4j-manual-2.3.12.pdf	The documentation of the Neo4JXML service
+- lib						The location of the jar files necessary for this assignment
+- lib-src					The location of the source file jars to associate with libraries
+- src						The location of source files
+- custom					The location of custom files
+- build.xml					The ant script for this assignment
+- neo4j-build.xml			The ant script for automation of NEO4J operation (included in build.xml)
+- sol-build.xml				The ant script for generating artifacts for the solution (initially empty)
+
+
+
+
+
+In Neo4j authentication and authorization is enabled by default. 
+It is possible to turn off all authentication and authorization by following these steps: 
+1. conf/neo4j-server.properties file should be located 
+2. the line "dbms.security.auth_enabled=false" should be uncommented
+

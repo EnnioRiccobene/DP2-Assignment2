@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="buildSolutions" name="BIB-2">
+	<description>
+			Script for BIB Assignment 2
+	</description>
+
+	<!-- The "BibReaderFactory" used for BibInfo and as data generator for tests -->
+	<property name="BibInfo.BibReaderFactory" value="it.polito.dp2.BIB.Random.BibReaderFactoryImpl" />
+
+	<!-- The "CitationFinderFactory" of the solution -->
+	<property name="SolutionCitationFinderFactory" value="it.polito.dp2.BIB.sol2.CitationFinderFactory" />
+
+	<!-- The default test class -->
+	<property name="test.class" value="it.polito.dp2.BIB.ass2.tests.BibTests" />
+
+    <!-- The location of the Neo4J web service -->
+	<property name="PORT" value="7474"/>
+	<property name="URL" value="http://localhost:${PORT}/db"/>
+
+	<!-- The main location of this assignment -->
+	<property name="ass2.location" location="." />
+
+	<!-- other locations in the project -->
+	<property name="src.dir" location="${ass2.location}/src" />
+	<property name="build.dir" location="${ass2.location}/build" />
+	<property name="lib.dir" location="${ass2.location}/lib" />
+	<property name="xsd.dir" location="${ass2.location}/xsd" />
+	<property name="gen.dir" location="${ass2.location}/gen-src" />
+	<property name="gen.schema.dir" location="${ass2.location}/gen-schema" />
+	
+	<property name="shared.location" location="/opt/dp2/shared"/>
+	<property name="ext.lib.dir" location="${shared.location}/lib" />
+	
+	<!-- locations of specific files -->
+	<property name="biblio.schema" location="${xsd.dir}/biblio.xsd" />
+	<property name="gbooks.schema" location="${xsd.dir}/gbooks/DataTypes.xsd" />
+	<property name="neo4j.schema" location="${xsd.dir}/neo4j/DataTypes.xsd" />
+	
+
+	<!-- The default sourceFileName -->
+	<property name="sourceFileName" location="${xsd.dir}/biblio.xml" />
+	
+	<!-- The default keyword for the gBooks example -->
+	<property name="keyword" value="java" />
+
+	<!-- Compilation options -->
+	<property name="debug" value="true" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.8" />
+	<property name="source" value="1.8" />
+	
+	<!-- Ant Script for controlling Neo4j-->
+	<import file="neo4j-build.xml"/>
+	
+	<!-- The classpath that includes only the BIB.jar -->
+	<path id="BIB.classpath">
+		<pathelement location="${lib.dir}/BIB.jar"/>
+	</path>
+		
+	<!-- The classpath to be used for compilation of the solution -->
+	<path id="sol.classpath">
+		<pathelement location="${lib.dir}/BIB.jar"/>
+		<pathelement location="${lib.dir}/ass2.jar"/>
+		<pathelement location="${build.dir}" />
+		<fileset dir="${ext.lib.dir}">
+		    <include name="*.jar" />
+			<exclude name="ant-*.jar"/>
+		</fileset>
+	</path>
+
+	<!-- The classpath to be used for running the tests (and compilation of the examples) -->
+	<path id="test.classpath">
+		<pathelement location="${build.dir}" />
+		<fileset dir="${lib.dir}">
+		    <include name="*.jar" />
+		</fileset>
+		<fileset dir="${ext.lib.dir}">
+		    <include name="*.jar" />
+			<exclude name="ant-*.jar"/>
+		</fileset>
+	</path>
+	
+	<!-- Target init	-->
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${gen.dir}" />
+		<mkdir dir="${gen.schema.dir}" />
+	</target>
+	
+	<!-- Target for compiling the BibInfo application -->
+	<target name="buildBibInfo" description="Build the sample application">
+		<echo>Building BibInfo (if needed)...</echo>
+		<mkdir dir="${build.dir}" />
+		<javac 
+			destdir="${build.dir}"
+			debug="${debug}"
+			debuglevel="${debuglevel}"
+			source="${source}"
+			target="${target}"
+			includeantruntime="false">
+				<src path="${src.dir}" />
+				<include name="it/polito/dp2/BIB/ass1/BibInfo.java" />
+				<classpath>
+					<path refid="BIB.classpath" />
+				</classpath>
+		</javac>
+		<echo>Done.</echo>
+	</target>
+
+	<!-- Target for running the BibInfo application -->
+	<target name="BibInfo" depends="buildBibInfo" description="Run the sample application">
+		<java classname="it.polito.dp2.BIB.ass1.BibInfo" failonerror="true" fork="yes">
+			<sysproperty key="it.polito.dp2.BIB.Random.sourceFileName" value="${sourceFileName}"/>
+			<sysproperty key="it.polito.dp2.BIB.BibReaderFactory" value="${BibInfo.BibReaderFactory}"/>
+			<classpath>
+				<path refid="BIB.classpath" />
+				<pathelement location="${lib.dir}/BIBRandom.jar"/>
+				<pathelement path="${build.dir}"/>
+			</classpath>
+		</java>
+	</target>
+	
+	<!-- Target for checking if artifacts have to be regenerated -->
+	<target name="-chk-artifacts">
+		<uptodate property="generate-artifacts.notRequired" targetfile="${gen.dir}/.flagfile">
+			<!-- regenerate artifacts if this build file is modified (or if the flagfile is removed) -->
+			<srcfiles dir="${ass2.location}" includes="build.xml" />
+			<!-- update also in case some xsd files are updated -->
+			<srcfiles dir="${xsd.dir}" includes="*" />
+		</uptodate>
+	</target>
+
+	<!-- define the client artifacts generation target -->
+	<target name="generate-artifacts" depends="-chk-artifacts,init" unless="generate-artifacts.notRequired">
+	   	<echo message="Compiling the biblio schema..." />
+    	<exec executable="xjc">
+    	    <arg line="-d ${gen.dir} ${biblio.schema}"/>
+    	</exec>
+    	<echo message="Compiling the gbooks schema..." />
+    	<exec executable="xjc">
+    	    <arg line="-d ${gen.dir} -p it.polito.dp2.rest.gbooks.client.jaxb ${gbooks.schema}"/>
+    	</exec>
+		<exec executable="xjc">
+			<arg line="-d ${gen.dir} -p it.polito.dp2.rest.neo4j.client.jaxb ${neo4j.schema}"/>
+		</exec>
+		<touch file="${gen.dir}/.flagfile" />
+	</target>
+	
+	<!-- Target for compiling the given examples -->
+    <target name="compileExamples" depends="init,generate-artifacts">
+     	<echo message="Compiling the java source files..." />
+    	<javac destdir="${build.dir}" debug="on" includeantruntime="false">
+    	   <src path="${gen.dir}" />
+    	   <src path="${src.dir}" />
+  		   <include name="it/polito/dp2/rest/gbooks/client/**" />
+  		   <include name="it/polito/dp2/rest/neo4j/client/**" />
+  		   <include name="it/polito/dp2/xml/biblio/**" />
+  		   <include name="it/polito/pad/dp2/biblio/**" />
+    	   <classpath refid="test.classpath">
+    	   </classpath>
+    	</javac>
+    </target>
+	
+	<!-- Target for compiling the solutions -->
+	<target name="buildSolutions" depends="init,compileExamples" description="Build your solutions">
+		<echo>Building the submitted solutions (if needed)...</echo>
+		<ant antfile="sol-build.xml" target="generate-artifacts"></ant>
+		<javac destdir="${build.dir}" debug="${debug}" debuglevel="${debuglevel}" source="${source}" target="${target}" includeantruntime="false">
+			<src path="${src.dir}"/>
+			<src path="${gen.dir}"/>
+			<include name="it/polito/dp2/BIB/sol2/**" />
+			<classpath>
+				<path refid="sol.classpath" />
+			</classpath>
+		</javac>
+		<echo>Done.</echo>
+	</target>
+	
+   <!-- Target for running the JAXBBIblio example -->
+   <target name="runJAXBBiblio" depends="compileExamples">
+    	<java classname="it.polito.dp2.xml.biblio.JAXBBiblio" fork="true">
+	        <arg value="${xsd.dir}/biblio.xml" />
+		<classpath refid="test.classpath">
+		</classpath>
+    	</java>
+    </target>
+	
+	<!-- Target for running the MarshalBook example -->
+    <target name="runMarshalBook" depends="compileExamples">
+    	<java classname="it.polito.dp2.xml.biblio.json.MarshalBook" fork="true">
+		<classpath refid="test.classpath">
+		</classpath>
+    	</java>
+    </target>
+	
+	<!-- Target for running the gBooks example (to be run with -Dkeyword) -->
+    <target name="runGbooks" depends="compileExamples">
+    	<java classname="it.polito.dp2.rest.gbooks.client.BookClient" fork="true">
+    		<arg line="${keyword}" />
+		<classpath refid="test.classpath">
+		</classpath>
+    	</java>
+    </target>
+
+	<!-- Target for running the acceptance tests for the mandatory exercise (exercise 1) -->
+	<target name="runFuncTest" depends="buildSolutions" description="Run Functional tests">
+		<delete file="testout.xml" />
+		<junit printsummary="on" dir="." fork="yes" haltonfailure="no" showoutput="no" filtertrace="true" timeout="120000">
+			<jvmarg value="-Djava.awt.headless=true" />
+			<sysproperty key="it.polito.dp2.BIB.BibReaderFactory" value="${BibInfo.BibReaderFactory}" />
+			<sysproperty key="it.polito.dp2.BIB.Random.sourceFileName" value="${sourceFileName}"/>
+			<sysproperty key="it.polito.dp2.BIB.ass2.CitationFinderFactory" value="${SolutionCitationFinderFactory}" />
+			<sysproperty key="it.polito.dp2.BIB.ass2.PORT" value="${PORT}"/>
+			<sysproperty key="it.polito.dp2.BIB.ass2.URL" value="${URL}"/>
+			<formatter type="brief" usefile="false"/>
+			<formatter type="xml" usefile="true"/>
+			<formatter type="plain" usefile="false"/>
+			<test haltonfailure="no" failureproperty="test_failed" outfile="testout" name="${test.class}"/>
+			<classpath>
+				<path refid="test.classpath" />
+			</classpath>
+		</junit>
+		<fail if="test_failed" status="126" message="*** Some Tests FAILED ***"/>
+		<echo>*** All Tests PASSED  ***</echo>
+	</target>
+
+	<!-- Target clean	-->
+	<target name="clean" description="Clean generated files and class files">
+		<delete dir="${build.dir}" />
+		<delete dir="${gen.dir}" />
+		<delete dir="${gen.schema.dir}" />
+		<delete file="testout.xml" />
+		<delete file="biblio.json" />
+	</target>
+	
+	<!--target for building the final zip containing the solution -->
+	<target name="make-zip" description="Make zip to be submitted">
+		<zip destfile="ass2.zip"
+			basedir="${ass2.location}"
+		    includes="custom/* xsd/**  src/it/polito/dp2/BIB/sol2/**/*.java sol-build.xml"
+		/>
+	</target>
+
+</project>

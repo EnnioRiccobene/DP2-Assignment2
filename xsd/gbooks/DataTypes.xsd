@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:complexType name="SearchResult">
+		<xsd:sequence>
+			<xsd:element name="totalItems" type="xsd:positiveInteger" />
+			<xsd:element ref="items" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="items">
+	<xsd:complexType>
+		<xsd:all>
+			<xsd:element name="selfLink" type="xsd:anyURI" />
+			<xsd:element name="volumeInfo" type="VolumeInfo" />
+		</xsd:all>
+	</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="VolumeInfo">
+		<xsd:sequence>
+			<xsd:element name="title" type="xsd:string"/>
+			<xsd:element name="subtitle" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="authors" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
+			<xsd:element name="publisher" type="xsd:string"/>
+			<xsd:element name="publishedDate" type="xsd:gYear"/>
+			<xsd:element name="industryIdentifiers" type="IndustryIdentifier" maxOccurs="unbounded"/>
+			<xsd:element name="pageCount" type="xsd:positiveInteger"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="IndustryIdentifier">
+		<xsd:sequence>
+			<xsd:element name="type">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string"> 
+						   <xsd:enumeration value="ISBN_10"/>
+						   <xsd:enumeration value="ISBN_13"/>
+					</xsd:restriction> 
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="identifier" type="ISBNCode" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- ISBN code is a 10 or 13 digit code. If it is 10 digits long the last digit may be a X -->  
+	<xsd:simpleType name="ISBNCode"> 
+	  <xsd:restriction base="xsd:string"> 
+	   <xsd:pattern value="[0-9]{13}"/>
+	   <xsd:pattern value="[0-9]{9}([0-9]|X)"/>
+	  </xsd:restriction> 
+	</xsd:simpleType>
+</xsd:schema>

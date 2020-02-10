@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:element name="node">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="labels" type="xsd:anyURI" />
+				<xsd:element name="self" type="xsd:anyURI" />
+				<xsd:element ref="data" />	
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="data">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="title" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="relationship">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="to" type="xsd:anyURI" />
+				<!-- In java mettere come valore CitedBy -->
+				<xsd:element name="type" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+		<xsd:element name="traverse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="order" type="xsd:string"/>
+				<xsd:element name="return_filter" type="TraverseFilter" />				
+				<xsd:element name="prune_evaluator" type="PruneType" />				 
+				<xsd:element name="relationships" type="RelType" minOccurs="1" maxOccurs="unbounded"/>
+				<xsd:element name="max_depth" type="xsd:integer"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	<xsd:complexType name="TraverseFilter">
+		<xsd:sequence>
+			<xsd:element name="body" type="xsd:string"/>
+			<xsd:element name="language" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PruneType">
+		<xsd:sequence>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="language" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="RelType">
+		<xsd:sequence>
+			<xsd:element name="direction" type="xsd:string"/>
+			<xsd:element name="type" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
